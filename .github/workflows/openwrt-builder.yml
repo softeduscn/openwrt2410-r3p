@@ -190,7 +190,7 @@ jobs:
       uses: ophub/delete-releases-workflows@main
       with:
         delete_releases: true
-        releases_keep_latest: 2
+        releases_keep_latest: 3
         releases_keep_keyword: $TAG_NAME
         delete_workflows: true
         workflows_keep_day: 1
