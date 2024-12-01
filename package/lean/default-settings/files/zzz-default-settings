@@ -1,0 +1,347 @@
+#!/bin/sh
+
+hostname='R3P'
+uci set system.@system[0].hostname=$hostname
+uci set system.@system[0].timezone=CST-8
+uci set system.@system[0].zonename=Asia/Shanghai
+uci del system.ntp.server
+uci add_list system.ntp.server='ntp.aliyun.com'
+uci commit system
+
+if [ -f /etc/config/upnpd ]; then
+	uci set upnpd.config.enabled=1
+	uci set upnpd.config.external_ip='209.58.188.199'
+	uci commit upnpd
+fi
+
+uci set network.globals.ula_prefix=''
+#uci set network.@device[0].MTU='1472'
+homeip='192.168.1.1'
+wanip='192.168.1.119'
+wifiname='VAIOMI'
+uci set network.wan.hostname=$hostname
+
+uci set dhcp.lan.ra='relay'
+uci set dhcp.lan.dhcpv6='relay'
+uci set dhcp.lan.ndp='relay'
+uci set dhcp.wan.ignore='1'
+uci set dhcp.@dnsmasq[0].cachesize='0'
+uci commit dhcp
+
+cat /etc/config/dhcp | grep wan6 > /dev/null
+if [ $? -ne 0 ];then
+cat >>/etc/config/dhcp <<EOF
+config dhcp 'wan6'
+	option interface 'wan6'
+	option ignore '1'
+	option master '1'
+	option ra 'relay'
+	option dhcpv6 'relay'
+	option ndp 'relay'
+EOF
+fi
+
+#uci set network.wan.proto='dhcp'
+#uci set network.wan.force_link='0'
+#uci set network.wan.stp='1'
+#uci set network.wan.metric='1'
+#uci set network.wan.ifname='eth0.2'
+#uci set network.wan.delegate='1'
+#uci set network.wan.type='bridge'
+#uci set network.wan6.ifname='br-wan'
+#uci set network.wan6.delegate='1'
+#uci set network.wan6.force_link='0'
+#uci set network.wan6.metric='2'
+
+uci set network.@device[0].bridge_empty=1
+uci set network.@device[0].stp=1
+#uci set network.@device[0].mtu='1472'
+uci set network.@device[0].mtu6='1472'
+uci add_list network.@device[0].ports='wan'
+uci add_list network.@device[0].ports='wgmast'
+uci set network.lan.device='br-lan.1'
+uci set network.wan.device='br-lan.2'
+uci set network.wan6.device='br-lan.2'
+uci set network.lan.ipaddr='192.168.88.1'
+#uci set network.lan.force_link='0'
+#uci set network.lan.delegate='1'
+#uci del network.lan.dns
+#uci add_list network.lan.dns=$wanip
+uci commit network
+
+
+uci set wireless.radio0.noscan='1'
+uci set wireless.radio0.country="CN"
+uci set wireless.radio0.htmode='HT40'
+uci set wireless.radio0.channel='8'
+uci set wireless.radio0.legacy_rates='0'
+#uci set wireless.radio0.mu_beamformer='1'
+uci set wireless.default_radio0.ssid='VAIOMI'
+uci set wireless.default_radio0.key='sonyvaiotz13w'
+uci set wireless.default_radio0.encryption='psk-mixed'
+uci set wireless.default_radio0.disassoc_low_ack='0'
+#uci set wireless.default_radio0.disabled='1'
+uci set wireless.default_radio0.ssid=$wifiname
+uci set wireless.default_radio0.key='sonyvaiotz13w'
+uci set wireless.default_radio0.encryption='psk-mixed'
+uci set wireless.radio1.country="CN"
+uci set wireless.radio1.hwmode='11a'
+uci set wireless.radio1.htmode='VHT80'
+uci set wireless.radio1.channel='149'
+#uci set wireless.radio1.txpower='23'
+uci set wireless.radio1.legacy_rates='0'
+#uci set wireless.radio1.mu_beamformer='1'
+uci set wireless.default_radio1.ssid='VAIOMI'
+uci set wireless.default_radio1.key='sonyvaiotz13w'
+uci set wireless.default_radio1.encryption='psk-mixed'
+uci set wireless.default_radio1.disassoc_low_ack='0'
+#uci set wireless.default_radio1.disabled='1'
+
+uci commit wireless
+
+uci set firewall.@defaults[0].flow_offloading='1'
+uci set firewall.@defaults[0].flow_offloading_hw='1'
+uci set firewall.@defaults[0].synflood_protect='1'
+uci set firewall.@defaults[0].input='ACCEPT'
+uci set firewall.@defaults[0].output='ACCEPT'
+uci set firewall.@defaults[0].forward='ACCEPT'
+uci set firewall.@zone[0].input='ACCEPT'
+uci set firewall.@zone[0].output='ACCEPT'
+uci set firewall.@zone[0].forward='ACCEPT'
+uci set firewall.@zone[1].input='ACCEPT'
+uci set firewall.@zone[1].output='ACCEPT'
+uci set firewall.@zone[1].forward='REJECT'
+uci commit firewall
+
+cat /etc/config/firewall | grep wgmast > /dev/null
+if [ $? -ne 0 ];then
+cat >> /etc/config/firewall <<EOF
+config rule
+	option name 'Allow-Wireguard'
+	option dest_port '58888'
+	option src 'wan'
+	option target 'ACCEPT'
+
+config zone
+	option name 'wgmast'
+	option network 'wgmast'
+	option input 'ACCEPT'
+	option output 'ACCEPT'
+	option forward 'ACCEPT'
+	option masq '1'
+	option mtu_fix '1'
+EOF
+fi
+
+cat >> /etc/config/network <<EOF
+config device
+	option name 'phy0-ap0'
+	option ipv6 '1'
+
+config device
+	option name 'phy1-ap0'
+	option ipv6 '1'
+
+config bridge-vlan
+	option device 'br-lan'
+	option vlan '1'
+	list ports 'lan2'
+	list ports 'lan3'
+	list ports 'wgmast'
+	
+config bridge-vlan
+	option device 'br-lan'
+	option vlan '2'
+	list ports 'lan1'
+	list ports 'wan'
+	
+config interface 'wgmast'
+	option proto 'wireguard'
+	option private_key 'eMglGU5RUxSQtOfL8Txg6Dych1491zZP1JjQR8flykI='
+	list addresses '192.168.9.1'
+	option listen_port '58888'
+	option metric '3'
+
+config wireguard_wgmast
+	option public_key 'RuCdaOHKPDf2c2kihx2dzBhEDKZnbnhP1N4aUBkzw3A='
+	option route_allowed_ips '1'
+	list allowed_ips '192.168.9.11'
+	option description 'Iphone8Plus'
+
+config wireguard_wgmast
+	option public_key 'ql9g9ngGQMq9cyBaun5QjnyROyh7Cu4zJ9eZwFM6UGw='
+	option route_allowed_ips '1'
+	list allowed_ips '192.168.9.13'
+	option description 'Iphone8'
+
+config wireguard_wgmast
+	option public_key 'HkRSRzDMks74AmFQlnByouVNR6E/o5I+j033QqF1UyI='
+	option route_allowed_ips '1'
+	list allowed_ips '192.168.9.12'
+	option description 'Iphone7'
+	
+config wireguard_wgmast
+	option public_key 'Lxpb8EOqhK7Wz8TuAgfPcJ/NvjNcEbzcblru/OMZIGE='
+	option route_allowed_ips '1'
+	list allowed_ips '192.168.9.10'
+	option description 'Iphone6'
+EOF
+
+[ -f /etc/lighttpd/lighttpd.conf ] && {
+file='/etc/lighttpd/lighttpd.conf'
+sed -i  's|".php", ".pl", ".fcgi"|".php", ".pl", ".fcgi", ".lua"|' $file
+sed -i  's|#server.port|server.port|' $file
+}
+
+[ -f /etc/lighttpd/conf.d/30-cgi.conf ] && {
+sed -i '/".cgi" => "\/usr\/bin\/perl"/i\                               ".lua" => "\/usr\/bin\/lua",' /etc/lighttpd/conf.d/30-cgi.conf
+sed -i '/".cgi" => "\/usr\/bin\/perl"/i\                               ".php" => "\/usr\/bin\/php-cgi",' /etc/lighttpd/conf.d/30-cgi.conf
+cat >> /etc/lighttpd/conf.d/30-cgi.conf <<EOF
+cgi.assign += ( "/cgi-bin/luci" => "",
+                "/cgi-bin/cgi-backup" => "",
+                "/cgi-bin/cgi-download" => "",
+                "/cgi-bin/cgi-exec" => "",
+                "/cgi-bin/cgi-upload" => "" )
+				
+server.username := ""
+server.groupname := ""
+EOF
+}
+
+[ -f /etc/init.d/ddns ] && {
+cat > /etc/config/ddns <<EOF
+
+config ddns 'global'
+	option upd_privateip '1'
+
+config service 'DynuMAST'
+	option service_name 'dynu.com'
+	option enabled '1'
+	option username 'sqmshcn'
+	option password 'dynuddns'
+	option ip_source 'web'
+	option ip_url 'http://members.3322.org/dyndns/getip'
+	option interface 'lan'
+	option force_dnstcp '1'
+	option lookup_host 'mastcn.ddnsfree.com'
+	option domain 'mastcn.ddnsfree.com'
+
+config service 'DynuHOME'
+	option service_name 'dynu.com'
+	option enabled '1'
+	option lookup_host 'homecn.ddnsfree.com'
+	option domain 'homecn.ddnsfree.com'
+	option username 'sqmshcn'
+	option password 'dynuddns'
+	option ip_source 'web'
+	option ip_url 'http://members.3322.org/dyndns/getip'
+	option interface 'lan'
+	option force_dnstcp '1'
+
+config service 'DynuNAS'
+	option service_name 'dynu.com'
+	option enabled '1'
+	option lookup_host 'nascn.ddnsfree.com'
+	option domain 'nascn.ddnsfree.com'
+	option username 'sqmshcn'
+	option password 'dynuddns'
+	option ip_source 'web'
+	option ip_url 'http://members.3322.org/dyndns/getip'
+	option interface 'lan'
+	option force_dnstcp '1'
+
+config service 'DynuSSR'
+	option service_name 'dynu.com'
+	option enabled '1'
+	option lookup_host 'vpncn.ddnsfree.com'
+	option domain 'vpncn.ddnsfree.com'
+	option username 'sqmshcn'
+	option password 'dynuddns'
+	option ip_source 'web'
+	option ip_url 'http://members.3322.org/dyndns/getip'
+	option interface 'lan'
+	option force_dnstcp '1'
+
+config service 'DynuMAST6'
+	option service_name 'dynu.com'
+	option enabled '1'
+	option username 'sqmshcn'
+	option password 'dynuddns'
+	option ip_source 'web'
+	option use_ipv6 '1'
+	option interface 'lan'
+	option force_dnstcp '1'
+	option ip_url 'http://mast/ip6.html'
+	option lookup_host 'mastcn.ddnsfree.com'
+	option domain 'mastcn.ddnsfree.com'
+
+config service 'DynuHOME6'
+	option service_name 'dynu.com'
+	option enabled '1'
+	option username 'sqmshcn'
+	option password 'dynuddns'
+	option ip_source 'web'
+	option use_ipv6 '1'
+	option interface 'lan'
+	option force_dnstcp '1'
+	option ip_url 'http://home/ip6.html'
+	option lookup_host 'homecn.ddnsfree.com'
+	option domain 'homecn.ddnsfree.com'
+
+config service 'DynuNAS6'
+	option service_name 'dynu.com'
+	option enabled '1'
+	option lookup_host 'nascn.ddnsfree.com'
+	option use_ipv6 '1'
+	option domain 'nascn.ddnsfree.com'
+	option username 'sqmshcn'
+	option password 'dynuddns'
+	option ip_source 'web'
+	option ip_url 'http://nas:8080/ip6.html'
+	option interface 'lan'
+	option force_dnstcp '1'
+
+config service 'DynuSSR6'
+	option service_name 'dynu.com'
+	option enabled '1'
+	option lookup_host 'vpncn.ddnsfree.com'
+	option use_ipv6 '1'
+	option domain 'vpncn.ddnsfree.com'
+	option username 'sqmshcn'
+	option password 'dynuddns'
+	option ip_source 'web'
+	option ip_url 'http://vpn/ip6.html'
+	option interface 'lan'
+	option force_dnstcp '1'
+EOF
+}
+
+[ -f /etc/init.d/ttyd ] && {
+cat > /etc/config/ttyd <<EOF
+config ttyd
+	option command '/bin/login'
+	option debug '7'
+	option ipv6 '1'
+EOF
+}
+
+[ -f /www/tinyfilemanager/index.php ] && sed -i s/'"lang":"en"'/'"lang":"zh-CN"'/ /www/tinyfilemanager/index.php
+
+#sed -i '/dhcp-option/d' /etc/dnsmasq.conf
+#echo "#dhcp-option-force=125,00:00:00:00:16:02:06:48:47:57:2d:43:54:03:04:5a:58:48:4e:0b:02:00:55:0a:02:20:00" >> /etc/dnsmasq.conf
+#echo "#dhcp-option=15" >> /etc/dnsmasq.conf
+#echo "#dhcp-option=28" >> /etc/dnsmasq.conf
+
+#sed -i '/--to-ports/d' /etc/firewall.user
+#echo "iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 53" >> /etc/firewall.user
+#echo "iptables -t nat -A PREROUTING -p tcp --dport 53 -j REDIRECT --to-ports 53" >> /etc/firewall.user
+
+utc_secs=$(date +%s)
+days=$(( utc_secs / 86400 ))
+pass='$1$TADtMues$II9qrw8S7H3hYtJASm0tw.'
+sed -i "s/root.*$/root:$pass:${days}:0:99999:7:::/g" /etc/shadow
+sed -i '/option disabled/d' /etc/config/wireless
+sed -i '/set wireless.radio${devidx}.disabled/d' /lib/wifi/mac80211.sh
+wifi up
+
+exit 0

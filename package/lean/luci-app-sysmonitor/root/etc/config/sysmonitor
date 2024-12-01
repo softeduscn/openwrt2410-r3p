@@ -1,0 +1,138 @@
+config sysmonitor 'sysmonitor'
+	option enable '1'
+	option vpnsw '20'
+	option chkprog '60'
+	option chksys '180'
+	option chktest '120'
+	option prog '15'
+	option vpnenable '0'
+	option syslog '0'
+	option vpntype 'VPN'
+	option homeip '192.168.1.119'
+	option netmask '255.255.255.0'
+	option gatewayip '192.168.1.1'
+	option vpnip '0.0.0.0'
+	option dns 'NULL'
+	option ddns '1'
+	option ddnslog '0'
+	option ipsec '0'
+	option pptp '0'
+	option dhcp '0'
+	list vpn '192.168.1.1'
+	option firmware 'https://github.com/softeduscn/openwrt-r3p/releases/download/MI-R3P/openwrt-ramips-mt7621-xiaomi_mi-router-3-pro-squashfs-sysupgrade.bin'
+
+config host_list
+	option hostname 'R3P'
+	option hostip '192.168.1.119'
+
+config host_list
+	option hostname 'HOME'
+	option hostip '192.168.1.118'
+
+config host_list
+	option hostname 'MI3K'
+	option hostip '192.168.1.120'
+	
+config ddns_list
+	option iptype 'ip6'
+	option url 'http://162.216.242.28/nic/update'
+	option username 'sqmshcn'
+	option password 'dynuddns'
+	option hostname 'maincn.ddnsfree.com'
+	option getip 'curl -s --connect-timeout 1 http://mi3k/ip6.html'
+	option ipaddr ''
+
+config ddns_list
+	option url 'http://162.216.242.28/nic/update'
+	option username 'sqmshcn'
+	option password 'dynuddns'
+	option hostname 'maincn.ddnsfree.com'
+	option iptype 'ip4'
+	option getip 'curl -s --connect-timeout 1 http://members.3322.org/dyndns/getip'
+	option ipaddr ''
+
+config ddns_list
+	option iptype 'ip6'
+	option url 'http://162.216.242.28/nic/update'
+	option username 'sqmshcn'
+	option password 'dynuddns'
+	option hostname 'mastcn.ddnsfree.com'
+	option getip 'curl -s --connect-timeout 1 http://r3p/ip6.html'
+	option ipaddr ''
+
+config ddns_list
+	option url 'http://162.216.242.28/nic/update'
+	option username 'sqmshcn'
+	option password 'dynuddns'
+	option hostname 'mastcn.ddnsfree.com'
+	option iptype 'ip4'
+	option getip 'curl -s --connect-timeout 1 http://members.3322.org/dyndns/getip'
+	option ipaddr ''
+
+config ddns_list
+	option hostname 'nascn.ddnsfree.com'
+	option iptype 'ip6'
+	option url 'http://162.216.242.28/nic/update'
+	option username 'sqmshcn'
+	option password 'dynuddns'
+	option getip 'curl -s --connect-timeout 1 http://nas:8080/ip6.html'
+	option ipaddr ''
+
+config ddns_list
+	option hostname 'nascn.ddnsfree.com'
+	option iptype 'ip4'
+	option url 'http://162.216.242.28/nic/update'
+	option username 'sqmshcn'
+	option password 'dynuddns'
+	option getip 'curl -s --connect-timeout 1 http://members.3322.org/dyndns/getip'
+	option ipaddr ''
+
+config ddns_list
+	option hostname 'vpncn.ddnsfree.com'
+	option iptype 'ip6'
+	option url 'http://162.216.242.28/nic/update'
+	option username 'sqmshcn'
+	option password 'dynuddns'
+	option getip 'curl -s --connect-timeout 1 http://vpn/ip6.html'
+	option ipaddr ''
+
+config ddns_list
+	option hostname 'vpncn.ddnsfree.com'
+	option iptype 'ip4'
+	option url 'http://162.216.242.28/nic/update'
+	option username 'sqmshcn'
+	option password 'dynuddns'
+	option getip 'curl -s --connect-timeout 1 http://members.3322.org/dyndns/getip'
+	option ipaddr ''
+		
+config prog_list
+	option enabled '1'
+	option program 'updatehost'
+	option cycle '15'
+	option first '25'
+	option path '/usr/share/sysmonitor/sysapp.sh'
+	option name '更新主机'
+
+config prog_list
+	option enabled '1'
+	option program 'chkvpn'
+	option cycle '65'
+	option first '120'
+	option path '/usr/share/sysmonitor/sysapp.sh'
+	option name '测连VPN'
+
+config prog_list
+	option enabled '1'
+	option program 'reg_ddns'
+	option cycle '3600'
+	option path '/usr/share/sysmonitor/sysapp.sh'
+	option first '60'
+	option name '注册DDNS'
+	
+config prog_list
+	option enabled '1'
+	option program 'getddnsip'
+	option cycle '900'
+	option path '/usr/share/sysmonitor/sysapp.sh'
+	option first '90'
+	option name '获取DDNSip'

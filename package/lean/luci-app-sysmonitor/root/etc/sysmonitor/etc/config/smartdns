@@ -1,0 +1,40 @@
+
+config smartdns
+	option enabled '1'
+	option server_name 'smartdns'
+	option tcp_server '1'
+	option port '6053'
+	option prefetch_domain '1'
+	option resolve_local_hostnames '1'
+	option cache_size '5120'
+	option force_https_soa '0'
+	option ipv6_server '1'
+	option bind_device '0'
+	option response_mode 'fastest-response'
+	option serve_expired '1'
+	option cache_persist '0'
+	option auto_set_dnsmasq '1'
+	option doh_server_port '843'
+	option doh_server '1'
+	option tls_server '1'
+	option tls_server_port '853'
+	option dualstack_ip_selection '1'
+	option seconddns_tcp_server '1'
+	option seconddns_port '8653'
+	option seconddns_server_group 'oversea'
+	option log_output_mode 'file'
+	option mdns_lookup '1'
+	option speed_check_mode 'none'
+	option rr_ttl_min '30'
+	option rr_ttl_max '600'
+	option rr_ttl_reply_max '20'
+
+config client-rule
+	option enabled '0'
+	option dualstack_ip_selection '0'
+	option force_https_soa '0'
+
+config domain-rule
+
+config ip-rule
+

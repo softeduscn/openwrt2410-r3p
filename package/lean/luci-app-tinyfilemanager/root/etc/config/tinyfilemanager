@@ -1,0 +1,13 @@
+
+config main
+	option use_auth '1'
+	list readonly_users 'user'
+	option date_format 'd.m.o'
+	option time_format 'H:i:s'
+	option show_second '0'
+	option favicon_path '/etc/tinyfilemanager/favicon.png'
+	option online_viewer '0'
+	option global_readonly '0'
+	option max_upload_size '25'
+	list auth_users 'admin:$2y$10$qKQL/wD7pDnTdj/sVPmWjO5GgunZhSc1aPSe4gqFUCzZAXhgcCqyq'
+
