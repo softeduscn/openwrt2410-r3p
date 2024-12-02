@@ -157,13 +157,14 @@ do
 	program=$(uci_get_by_name $NAME @prog_list[$num] program)
 	path=$(uci_get_by_name $NAME @prog_list[$num] path "/usr/share/sysmonitor/sysapp.sh")
 	enabled=$(uci_get_by_name $NAME @prog_list[$num] enabled 0)
-	status=$(cat /tmp/delay.list|grep $program|wc -l)
-	if [ "$status" == 0 ]; then
-		cycle=$(uci_get_by_name $NAME @prog_list[$num] cycle 200)
-		enabled=$(uci_get_by_name $NAME @prog_list[$num] enabled 0)
-		[ "$enabled" == 1 ] && echo $cycle'='$path' '$program >> /tmp/delay.sign
-	else	
-		[ "$enabled" == 0 ] && sed -i "/$program/d" /tmp/delay.list
+	if [ "$enabled" == 1 ]; then
+		status=$(cat /tmp/delay.list|grep $program|wc -l)
+		if [ "$status" == 0 ]; then
+			cycle=$(uci_get_by_name $NAME @prog_list[$num] cycle 200)
+			echo $cycle'='$path' '$program >> /tmp/delay.sign
+		fi
+	else
+		sed -i "/$program/d" /tmp/delay.list
 	fi
 	num=$((num+1))
 done
@@ -711,7 +712,7 @@ prog_list)
 		timeid=$(echo $i|cut -d'=' -f1)
 		[ "$timeid" -le 30 ] && color='MediumSeaGreen '
 		[ "$timeid" -le 15 ] && color='Green '
-		[ "$(echo $i|cut -d' ' -f2)" != 'chkprog' ] && button=$button' <font color='$color'>'$i'</font><BR>'
+		button=$button' <font color='$color'>'$i'</font><BR>'
 	done < /tmp/delay.list
 	button=$button'</B>'
 	;;
@@ -1201,14 +1202,12 @@ logup)
 chk_vpn)
 	chk_vpn
 	;;
+chk_prog)
+	chk_prog
+	;;
 killtmp)
 	tmp=$(pgrep -f firstrun)
 	[ -n "$tmp" ] && kill $tmp
-	;;
-chkprog)
-	chk_prog
-	chkprog=$(uci_get_by_name $NAME $NAME chkprog 60)
-	echo $chkprog'='$APP_PATH'/sysapp.sh chkprog' >> /tmp/delay.sign
 	;;
 getdelay)
 	getdelay $1 $2

@@ -1,7 +1,7 @@
 config sysmonitor 'sysmonitor'
 	option enable '1'
 	option vpnsw '20'
-	option chkprog '60'
+	option chkprog '30'
 	option chksys '180'
 	option chktest '120'
 	option prog '15'

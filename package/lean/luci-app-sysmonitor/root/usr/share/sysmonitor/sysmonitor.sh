@@ -241,7 +241,7 @@ sys_exit() {
 }
 
 sysctl -w net.ipv4.tcp_congestion_control=bbr >/dev/null
-echolog "Sysmonitor is on."
+#echolog "Sysmonitor is on."
 syspid=$(cat /tmp/sysmonitor.pid)
 syspid=$((syspid+1))
 echo $syspid > /tmp/sysmonitor.pid

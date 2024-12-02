@@ -64,7 +64,6 @@ do
 done
 echo '10=/usr/share/sysmonitor/sysapp.sh killtmp' >> /tmp/delay.sign
 echo "20=ntpd -n -q -p ntp.aliyun.com" >> /tmp/delay.sign
-echo '60='$APP_PATH'/sysapps.sh chkprog' >> /tmp/delay.list
 [ -f /tmp/firstrun ] && rm /tmp/firstrun
 }
 
@@ -95,9 +94,16 @@ echo $syspid > /tmp/chkvpn.pid
 chknum=0
 chksys=0
 regvpn_num=0
+chkprog=0
 while [ "1" == "1" ]; do
 	chknum=$((chknum+1))
 	regvpn_num=$((regvpn_num+1))
+	chkprog=$((chkprog+1))
+	[ -f /tmp/firstrun ] && run_prog
+	if [ "$chkprog" -ge $(uci_get_by_name $NAME $NAME chkprog 60) ]; then
+		chkprog=0
+		$APP_PATH/sysapp.sh chk_prog
+	fi
 	if [ -f /tmp/updatevpn ]; then
 		rm /tmp/updatevpn
 		regvpn_num=61
@@ -158,11 +164,6 @@ while [ "1" == "1" ]; do
 				;;
 		esac
 	done
-	if [ -f /tmp/firstrun ]; then
-		run_prog
-	else
-		[ $(cat /tmp/delay.list|grep chkprog|wc -l) == 0 ] && $APP_PATH/sysapp.sh chkprog
-	fi
 	if [ -f /tmp/delay.sign ]; then
 		while read i
 		do
