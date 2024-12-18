@@ -840,10 +840,10 @@ vpns)
 			button=$button'<button class="button1" title="Goto '$host' setting"><a href="http://'$host'" target="_blank">Goto ->'$host'</a></button> '
 			if [ "$gateway" == $ip ]; then
 				color='green'			
-				button=$button'<font color='$color'>'$ip'-'$host'-'$name'</font>'
+				button=$button'<font color='$color'>'$ip'-'$name'</font>'
 				button=$button'<BR>'
 			else
-				button=$button'<font color='$color'>'$ip'-'$host'-'$name'</font> '
+				button=$button'<font color='$color'>'$ip'-'$name'</font> '
 				button=$button'<button class="button1" title="Select '$host' for VPN service"><a href="/cgi-bin/luci/admin/sys/sysmonitor/sysmenu?sys=selVPN&sys1='$ip'&redir=settings">Sel->'$host'</a></button><BR>'
 			fi
 		fi

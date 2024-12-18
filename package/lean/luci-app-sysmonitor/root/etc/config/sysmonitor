@@ -19,7 +19,7 @@ config sysmonitor 'sysmonitor'
 	option pptp '0'
 	option dhcp '0'
 	list vpn '192.168.1.1'
-	option firmware 'https://github.com/softeduscn/openwrt-r3p/releases/download/MI-R3P/openwrt-ramips-mt7621-xiaomi_mi-router-3-pro-squashfs-sysupgrade.bin'
+	option firmware 'https://gh-proxy.com/github.com/softeduscn/openwrt2410-r3p/releases/download/MI-R3P/openwrt-ramips-mt7621-xiaomi_mi-router-3-pro-squashfs-sysupgrade.bin'
 
 config host_list
 	option hostname 'R3P'

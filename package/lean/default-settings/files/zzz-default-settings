@@ -9,7 +9,7 @@ uci add_list system.ntp.server='ntp.aliyun.com'
 uci commit system
 
 if [ -f /etc/config/upnpd ]; then
-	uci set upnpd.config.enabled=1
+	uci set upnpd.config.enabled=0
 	uci set upnpd.config.external_ip='209.58.188.199'
 	uci commit upnpd
 fi
@@ -57,6 +57,8 @@ uci set network.@device[0].bridge_empty=1
 uci set network.@device[0].stp=1
 #uci set network.@device[0].mtu='1472'
 uci set network.@device[0].mtu6='1472'
+uci set network.@device[0].multicast='0'
+uci set network.@device[0].ip6segmentrouting='1'
 uci add_list network.@device[0].ports='wan'
 uci add_list network.@device[0].ports='wgmast'
 uci set network.lan.device='br-lan.1'
@@ -154,7 +156,21 @@ config bridge-vlan
 	option vlan '2'
 	list ports 'lan1'
 	list ports 'wan'
-	
+
+config device
+	option name 'br-lan.1'
+	option type '8021q'
+	option ifname 'br-lan'
+	option vid '1'
+	option ip6segmentrouting '1'
+
+config device
+	option name 'br-lan.2'
+	option type '8021q'
+	option ifname 'br-lan'
+	option vid '2'
+	option ip6segmentrouting '1'
+
 config interface 'wgmast'
 	option proto 'wireguard'
 	option private_key 'eMglGU5RUxSQtOfL8Txg6Dych1491zZP1JjQR8flykI='

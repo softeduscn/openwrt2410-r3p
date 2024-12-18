@@ -149,6 +149,7 @@ setdns() {
 	ifup wan
 	ifup wan6
 	/etc/init.d/odhcpd restart
+	/etc/init.d/dnsmasq restart
 	$APP_PATH/sysapp.sh service_dns
 }
 
@@ -166,6 +167,7 @@ setvpn() {
 	ifup wan
 	ifup wan6
 	/etc/init.d/odhcpd restart
+	/etc/init.d/dnsmasq restart
 	$APP_PATH/sysapp.sh service_dns
 }
 
